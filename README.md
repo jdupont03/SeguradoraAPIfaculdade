@@ -1,40 +1,46 @@
-Projeto de Consulta de Seguro - Validação de Elegibilidade
+**Insurance Eligibility Check Project**
+This project is an interactive web application developed using HTML, CSS, JavaScript, and jQuery to check insurance eligibility by integrating with external APIs. The system validates eligibility based on a vehicle's value and the user's state of residence.
 
-Este projeto é uma aplicação web interativa desenvolvida em HTML, CSS, JavaScript e jQuery para realizar uma consulta de elegibilidade de seguro, integrando-se com APIs externas. O sistema realiza uma verificação com base no valor de um veículo e no estado de residência do usuário.
+**Main Features**
+1. Integration with the FIPE API
+   
+The system retrieves the vehicle’s value using the FIPE code provided by the user, verifying if the value is equal to or greater than R$30,000 to be eligible.
 
-Funcionalidades principais:
-Integração com a API FIPE: O sistema consulta o valor do veículo pelo código FIPE informado pelo usuário, verificando se o valor é igual ou superior a R$30.000 para ser aprovado.
+        let urlFipe = 'https://brasilapi.com.br/api/fipe/preco/v1/' + fipe;
+        $.get(urlFipe, function(data){
+            data.forEach(veiculo => {
+                let valor = parseFloat(veiculo['valor'].replace("R$", "").replace(".", "").replace(",", "."));
+                if (valor >= 30000) { veiculoAprovado = true; }
+            });
+        });
 
-javascript
-Copiar código
-let urlFipe = 'https://brasilapi.com.br/api/fipe/preco/v1/' + fipe;
-$.get(urlFipe, function(data){
-    data.forEach(veiculo => {
-        let valor = parseFloat(veiculo['valor'].replace("R$", "").replace(".", "").replace(",", "."));
-        if (valor >= 30000) { veiculoAprovado = true; }
-    });
-});
-Verificação de Estado via API de CEP: O sistema também consulta a API de CEP, verificando se o estado é "RJ" (condição para aprovação).
+**2. State Verification via CEP API**
 
-javascript
-Copiar código
-let urlCep = 'https://brasilapi.com.br/api/cep/v2/' + cep;
-$.get(urlCep, function(data){
-    if (data['state'] === "RJ") { estadoAprovado = true; }
-});
-Feedback ao usuário: Caso ambas as condições sejam atendidas, o sistema exibe uma mensagem de elegibilidade ao seguro. Caso contrário, retorna uma mensagem de não aprovação.
+The system also queries the CEP API, checking if the user’s state is "RJ" (required for eligibility).
 
-javascript
-Copiar código
-if (veiculoAprovado && estadoAprovado) {
-    $("#resultadoSeguro").html("<p class='mb-0'><strong>Parabéns! Você está elegível para o seguro.</strong></p>")
-                         .removeClass("d-none alert-danger").addClass("alert-success");
-} else {
-    $("#resultadoSeguro").html("<p class='mb-0'><strong>Desculpe, você não atende aos critérios para o seguro.</strong></p>")
-                         .removeClass("d-none alert-success").addClass("alert-danger");
-}
-Tecnologias Utilizadas
-HTML5 e CSS3 para a estrutura e estilo da página
-Bootstrap 4 para responsividade e design moderno
-jQuery para manipulação dinâmica do DOM e integração com APIs externas
-APIs para consulta de informações FIPE e CEP, simulando um ambiente real de validação de dados.
+        let urlCep = 'https://brasilapi.com.br/api/cep/v2/' + cep;
+        $.get(urlCep, function(data){
+            if (data['state'] === "RJ") { estadoAprovado = true; }
+        });
+
+**3. User Feedback**
+
+If both conditions are met, the system displays a message of insurance eligibility. Otherwise, a message indicating ineligibility is shown.
+
+        if (veiculoAprovado && estadoAprovado) {
+            $("#resultadoSeguro").html("<p class='mb-0'><strong>Congratulations! You are eligible for insurance.</strong></p>")
+                                 .removeClass("d-none alert-danger").addClass("alert-success");
+        } else {
+            $("#resultadoSeguro").html("<p class='mb-0'><strong>Sorry, you do not meet the eligibility criteria for insurance.</strong></p>")
+                                 .removeClass("d-none alert-success").addClass("alert-danger");
+        }
+
+**Technologies Used**
+
+-HTML5 and CSS3 for page structure and styling
+
+-Bootstrap 4 for responsiveness and modern design
+
+-jQuery for dynamic DOM manipulation and API integration
+
+-APIs to retrieve FIPE and CEP data, simulating a real-world data validation environment.
