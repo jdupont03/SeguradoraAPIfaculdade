@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Consulta de Elegibilidade para Seguro</title>
+        <link rel="icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTaVvG4e8xpE_mSyCXweRMwqabijuugobofhQ&s" type="image/x-icon">
+        <!-- Bootstrap CSS -->
+        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+        <!-- jQuery -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    </head>
+<body class="bg-light">
+
+    <!-- Container Principal -->
+    <div class="container mt-5">
+        <!-- Título da Página -->
+        <div class="text-center mb-4">
+            <h1 class="display-4 text-primary">Verificação de Seguro</h1>
+            <p class="lead">Confira a disponibilidade do seu seguro informando o código FIPE e seu CEP.</p>
+        </div>
+
+        <!-- Formulário de Verificação -->
+        <div class="card shadow p-4">
+            <div class="form-group">
+                <label for="fipe">Digite Código FIPE:</label>
+                <input type="text" id="fipe" class="form-control" placeholder="Ex: 123456">
+            </div>
+
+            <div class="form-group">
+                <label for="cep">Digite CEP:</label>
+                <input type="text" id="cep" class="form-control" placeholder="Ex: 12345-678">
+            </div>
+
+            <button id="verificaSeguro" class="btn btn-primary btn-block mt-3">Verifique disponibilidade de seguro</button>
+        </div>
+
+        <!-- Resultados da Verificação -->
+        <div class="mt-4">
+            <div id="resultadoFipe" class="alert alert-info d-none"></div>
+            <div id="resultadoCep" class="alert alert-info d-none"></div>
+            <div id="resultadoSeguro" class="alert d-none"></div>
+        </div>
+    </div>
+
+    <!-- Script para Lógica de Verificação -->
+    <script>
+        $(document).ready(function(){
+            $("#verificaSeguro").click(function(){
+                // Limpa e esconde os resultados antes de cada nova verificação
+                $("#resultadoFipe, #resultadoCep, #resultadoSeguro").empty().addClass("d-none");
+
+                // Variáveis de controle de aprovação
+                let veiculoAprovado = false;
+                let estadoAprovado = false;
+
+                // Obter código FIPE e CEP
+                let fipe = $("#fipe").val();
+                let cep = $("#cep").val();
+
+                // Consulta FIPE
+                let urlFipe = 'https://brasilapi.com.br/api/fipe/preco/v1/' + fipe;
+                $.get(urlFipe, function(data){
+                    data.forEach(veiculo => {
+                        let valor = parseFloat(veiculo['valor'].replace("R$", "").replace(".", "").replace(",", "."));
+                        
+                        if (valor >= 30000) {
+                            veiculoAprovado = true;
+                        }
+
+                        let htmlFipe = `<p><strong>Marca:</strong> ${veiculo['marca']}</p>
+                                        <p><strong>Ano do Modelo:</strong> ${veiculo['anoModelo']}</p>
+                                        <p><strong>Valor:</strong> ${veiculo['valor']}</p>`;
+                        $("#resultadoFipe").html(htmlFipe).removeClass("d-none");
+                    });
+
+                    verificaAprovacao();
+                });
+
+                // Consulta CEP
+                let urlCep = 'https://brasilapi.com.br/api/cep/v2/' + cep;
+                $.get(urlCep, function(data){
+                    if (data['state'] === "RJ") {
+                        estadoAprovado = true;
+                    }
+
+                    let htmlCep = `<p><strong>Rua:</strong> ${data['street']}</p>
+                                   <p><strong>Bairro:</strong> ${data['neighborhood']}</p>
+                                   <p><strong>Estado:</strong> ${data['state']}</p>`;
+                    $("#resultadoCep").html(htmlCep).removeClass("d-none");
+
+                    verificaAprovacao();
+                });
+
+                // Função para verificar se ambas as condições foram atendidas
+                function verificaAprovacao() {
+                    if (veiculoAprovado && estadoAprovado) {
+                        $("#resultadoSeguro").html("<p class='mb-0'><strong>Seu seguro foi aprovado!</strong></p>")
+                                             .removeClass("d-none alert-danger").addClass("alert-success");
+                    } else {
+                        $("#resultadoSeguro").html("<p class='mb-0'><strong>Seu seguro foi reprovado</strong></p>")
+                                             .removeClass("d-none alert-success").addClass("alert-danger");
+                    }
+                }
+            });
+        });
+    </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
